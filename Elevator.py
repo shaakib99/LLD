@@ -16,10 +16,12 @@ class ElevatorManager:
                 elevator.direction = direction
                 return
 
-        # If no suitable elevator found, add to the first idle elevator
+        # If no suitable elevator found, reject the request
+    
+    def start(self):
         for elevator in self.elevators:
-            elevator.add_destination(floor, direction)
-            return
+            elevator.move()
+
 class Elevator:
     def __init__(self) -> None:
         self.pos = 0
@@ -37,18 +39,44 @@ class Elevator:
         # while going up
         if self.direction == 1:
             if self.minheap:
-                self.pos = heappop(self.minheap)
+                while self.minheap and self.pos > self.minheap[0]:
+                    heappop(self.minheap) # Rejecting floors already passed
+
+                if self.minheap:
+                    self.pos += self.direction
+                    if self.pos == self.minheap[0]: heappop(self.minheap)
+                else: 
+                    self.direction = 0
             else:
                 self.direction = 0
-                if self.maxheap:
-                    self.pos = -heappop(self.maxheap)
-                    self.direction = -1
+               
         # while going down
         elif self.direction == -1:
             if self.maxheap:
-                self.pos = -heappop(self.maxheap)
+                while self.maxheap and self.pos < -self.maxheap[0]:
+                    heappop(self.maxheap) # Rejecting floors already passed
+                if self.maxheap:
+                    self.pos += self.direction
+                    if self.pos == -self.maxheap[0]: heappop(self.maxheap)
+                else: 
+                    self.direction = 0
             else:
                 self.direction = 0
-                if self.minheap:
-                    self.pos = heappop(self.minheap)
+
+        # while idle
+        else:
+            if not self.minheap and not self.maxheap: 
+                self.direction = 0
+                return
+            if self.maxheap: 
+                if self.pos >= -self.maxheap[0]:
+                    self.direction = -1
+                else:
                     self.direction = 1
+                return
+            if self.minheap:
+                if self.pos <= self.minheap[0]:
+                    self.direction = 1
+                else:
+                    self.direction = -1
+                return
