@@ -16,7 +16,8 @@ class ElevatorManager:
                 elevator.direction = direction
                 return
 
-        # If no suitable elevator found, reject the request
+        # If no suitable elevator found, assign to the first elevator
+        self.elevators[0].add_destination(floor, direction)  # Default to first elevator
     
     def start(self):
         for elevator in self.elevators:
